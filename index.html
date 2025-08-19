@@ -15,11 +15,16 @@
     }
     #stage {
       font-size: 2em;
-      margin-top: 40px;
+      margin-top: 30px;
     }
     #display {
       font-size: 3em;
       margin: 20px 0;
+    }
+    #totalTime {
+      font-size: 1.5em;
+      margin-top: 40px;
+      color: #0f0;
     }
     #mainButton {
       width: 80%;
@@ -42,25 +47,37 @@
   <div id="stage">Ready</div>
   <div id="display">–</div>
   <button id="mainButton">Start</button>
+  <div id="totalTime">Total: 00:00:00</div>
 
   <script>
     let stage = 0; // 0 = idle, 1 = breaths, 2 = hold, 3 = result
-    let breathCount = 25;
+    let baseBreaths = 25;
+    let currentBreaths = baseBreaths;
     let timer = null;
     let timeElapsed = 0;
+    let totalSeconds = 0;
+    let totalTimer = null;
 
     const stageEl = document.getElementById("stage");
     const displayEl = document.getElementById("display");
     const buttonEl = document.getElementById("mainButton");
+    const totalTimeEl = document.getElementById("totalTime");
+
+    function formatTime(sec) {
+      const h = String(Math.floor(sec / 3600)).padStart(2,"0");
+      const m = String(Math.floor((sec % 3600) / 60)).padStart(2,"0");
+      const s = String(sec % 60).padStart(2,"0");
+      return `${h}:${m}:${s}`;
+    }
 
     function updateUI() {
       if (stage === 0) {
         stageEl.textContent = "Ready";
         displayEl.textContent = "–";
-        buttonEl.textContent = "Start 25 Breaths";
+        buttonEl.textContent = `Start (${currentBreaths} Breaths)`;
       } else if (stage === 1) {
         stageEl.textContent = "Breaths";
-        displayEl.textContent = breathCount;
+        displayEl.textContent = currentBreaths + " breaths";
         buttonEl.textContent = "Next (Hold Breath)";
       } else if (stage === 2) {
         stageEl.textContent = "Hold Breath";
@@ -71,27 +88,16 @@
         displayEl.textContent = timeElapsed + "s";
         buttonEl.textContent = "Next Round";
       }
-    }
-
-    function startBreaths() {
-      breathCount = 25;
-      displayEl.textContent = breathCount;
-      const interval = setInterval(() => {
-        breathCount--;
-        displayEl.textContent = breathCount;
-        if (breathCount <= 0) {
-          clearInterval(interval);
-          stage = 2;
-          startHold();
-        }
-      }, 1500); // ~1.5s per breath (vari mainīt)
+      totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
     }
 
     function startHold() {
       timeElapsed = 0;
       timer = setInterval(() => {
         timeElapsed++;
+        totalSeconds++;
         displayEl.textContent = timeElapsed + "s";
+        totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
       }, 1000);
     }
 
@@ -102,7 +108,6 @@
     buttonEl.addEventListener("click", () => {
       if (stage === 0) {
         stage = 1;
-        startBreaths();
       } else if (stage === 1) {
         stage = 2;
         startHold();
@@ -111,6 +116,7 @@
         stopHold();
       } else if (stage === 3) {
         stage = 0;
+        currentBreaths += 5; // nākamajam raundam +5
       }
       updateUI();
     });
