@@ -15,53 +15,71 @@
     }
     #stage {
       font-size: 2em;
-      margin-top: 30px;
+      margin-top: 20px;
     }
     #display {
       font-size: 3em;
-      margin: 20px 0;
-    }
-    #info {
-      margin-top: 30px;
-      font-size: 1.3em;
-    }
-    #totalTime {
-      color: #0f0;
-      margin-bottom: 10px;
-    }
-    #bestTime {
-      color: #0ff;
-      margin-bottom: 10px;
+      margin: 15px 0;
     }
     #mainButton {
-      width: 30%;
-      aspect-ratio: 1 / 1; /* platums : augstums = 1:2 */
-      font-size: 2em;
+      width: 100vw;
+      height: 100vw;
+      max-width: 600px;
+      max-height: 600px;
+      font-size: 1.8em;
       border: none;
-      border-radius: 20px;
+      border-radius: 0;
       background: #28a745;
       color: white;
-      margin-top: 20px;
+      margin: 0 auto;
+      display: block;
     }
     #mainButton:active {
       background: #218838;
     }
-    #saveBest {
-      margin-top: 15px;
-      padding: 10px 20px;
+    #saveButton {
+      width: 80%;
+      max-width: 300px;
+      height: 60px;
       font-size: 1.2em;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: #007bff;
       color: white;
+      margin: 20px auto;
+      display: none;
     }
-    #saveBest:active {
-      background: #0056b3;
+    #saveButton:active {
+      background: #0069d9;
     }
-    #bestOfBest {
+    #info {
       margin-top: 20px;
       font-size: 1.2em;
-      color: #ff0;
+    }
+    #totalTime {
+      color: #0f0;
+      margin: 5px 0;
+    }
+    #bestTime {
+      color: #0ff;
+      margin: 5px 0;
+    }
+    #topScores {
+      margin-top: 20px;
+    }
+    #topScores h2 {
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    #topScores ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 1.3em;
+      color: #fff;
+    }
+    #topScores li {
+      margin: 5px 0;
     }
   </style>
 </head>
@@ -69,18 +87,21 @@
   <h1>Breathing App</h1>
   <div id="stage">Ready</div>
   <div id="display">–</div>
-
   <button id="mainButton">Start</button>
-  <button id="saveBest">Save</button>
+  <button id="saveButton">Save Best</button>
 
   <div id="info">
     <div id="totalTime">Total: 00:00:00</div>
     <div id="bestTime">Best: –</div>
-    <div id="bestOfBest">Best of the Best:<br>–</div>
+  </div>
+
+  <div id="topScores">
+    <h2>Best of the Best (Top 3)</h2>
+    <ol id="topList"></ol>
   </div>
 
   <script>
-    let stage = 0; // 0 = idle, 1 = breaths, 2 = hold, 3 = result
+    let stage = 0;
     let baseBreaths = 25;
     let currentBreaths = baseBreaths;
     let holdTimer = null;
@@ -89,23 +110,15 @@
     let bestTime = 0;
     let totalTimer = null;
     let totalRunning = false;
-    let bestOfBest = [];
+    let topScores = JSON.parse(localStorage.getItem("topScores")) || [];
 
     const stageEl = document.getElementById("stage");
     const displayEl = document.getElementById("display");
     const buttonEl = document.getElementById("mainButton");
+    const saveBtn = document.getElementById("saveButton");
     const totalTimeEl = document.getElementById("totalTime");
     const bestTimeEl = document.getElementById("bestTime");
-    const saveBestBtn = document.getElementById("saveBest");
-    const bestOfBestEl = document.getElementById("bestOfBest");
-
-    // ---- LOAD BEST TIME FROM localStorage ----
-    if (localStorage.getItem("bestTime")) {
-      bestTime = parseInt(localStorage.getItem("bestTime"), 10);
-    }
-    if (localStorage.getItem("bestOfBest")) {
-      bestOfBest = JSON.parse(localStorage.getItem("bestOfBest"));
-    }
+    const topList = document.getElementById("topList");
 
     function formatTime(sec) {
       const h = String(Math.floor(sec / 3600)).padStart(2,"0");
@@ -114,35 +127,31 @@
       return `${h}:${m}:${s}`;
     }
 
-    function renderBestOfBest() {
-      if (bestOfBest.length === 0) {
-        bestOfBestEl.innerHTML = "Best of the Best:<br>–";
-      } else {
-        bestOfBestEl.innerHTML = "Best of the Best:<br>" + bestOfBest.join("s<br>") + "s";
-      }
-    }
-
     function updateUI() {
       if (stage === 0) {
         stageEl.textContent = "Ready";
         displayEl.textContent = "–";
         buttonEl.textContent = `Start (${currentBreaths} Breaths)`;
+        saveBtn.style.display = "none";
       } else if (stage === 1) {
         stageEl.textContent = "Breaths";
         displayEl.textContent = currentBreaths + " breaths";
         buttonEl.textContent = "Next (Hold Breath)";
+        saveBtn.style.display = "none";
       } else if (stage === 2) {
         stageEl.textContent = "Hold Breath";
         displayEl.textContent = timeElapsed + "s";
         buttonEl.textContent = "Stop Timer";
+        saveBtn.style.display = "none";
       } else if (stage === 3) {
         stageEl.textContent = "Result";
         displayEl.textContent = timeElapsed + "s";
         buttonEl.textContent = "Next Round";
+        saveBtn.style.display = "block";
       }
       totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
       bestTimeEl.textContent = bestTime > 0 ? "Best: " + bestTime + "s" : "Best: –";
-      renderBestOfBest();
+      renderTopScores();
     }
 
     function startHold() {
@@ -157,7 +166,6 @@
       clearInterval(holdTimer);
       if (timeElapsed > bestTime) {
         bestTime = timeElapsed;
-        localStorage.setItem("bestTime", bestTime); // save best
       }
     }
 
@@ -169,6 +177,23 @@
           totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
         }, 1000);
       }
+    }
+
+    function saveScore() {
+      topScores.push(timeElapsed);
+      topScores.sort((a,b) => b - a);
+      topScores = topScores.slice(0, 3);
+      localStorage.setItem("topScores", JSON.stringify(topScores));
+      renderTopScores();
+    }
+
+    function renderTopScores() {
+      topList.innerHTML = "";
+      topScores.forEach((score, i) => {
+        const li = document.createElement("li");
+        li.textContent = `#${i+1}: ${score}s`;
+        topList.appendChild(li);
+      });
     }
 
     buttonEl.addEventListener("click", () => {
@@ -183,19 +208,14 @@
         stopHold();
       } else if (stage === 3) {
         stage = 0;
-        currentBreaths += 5; // nākamajam raundam +5
+        currentBreaths += 5;
       }
       updateUI();
     });
 
-    // Save best to "Best of the Best"
-    saveBestBtn.addEventListener("click", () => {
-      if (timeElapsed > 0) {
-        bestOfBest.push(timeElapsed);
-        bestOfBest.sort((a,b) => b - a); // lielākie augšā
-        localStorage.setItem("bestOfBest", JSON.stringify(bestOfBest));
-        renderBestOfBest();
-      }
+    saveBtn.addEventListener("click", () => {
+      saveScore();
+      saveBtn.style.display = "none";
     });
 
     // Touch-friendly
@@ -203,9 +223,9 @@
       e.preventDefault();
       buttonEl.click();
     });
-    saveBestBtn.addEventListener("touchstart", (e) => {
+    saveBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
-      saveBestBtn.click();
+      saveBtn.click();
     });
 
     updateUI();
