@@ -21,10 +21,16 @@
       font-size: 3em;
       margin: 20px 0;
     }
-    #totalTime {
-      font-size: 1.5em;
+    #info {
       margin-top: 40px;
+      font-size: 1.3em;
+    }
+    #totalTime {
       color: #0f0;
+      margin-bottom: 10px;
+    }
+    #bestTime {
+      color: #0ff;
     }
     #mainButton {
       width: 80%;
@@ -47,21 +53,28 @@
   <div id="stage">Ready</div>
   <div id="display">–</div>
   <button id="mainButton">Start</button>
-  <div id="totalTime">Total: 00:00:00</div>
+
+  <div id="info">
+    <div id="totalTime">Total: 00:00:00</div>
+    <div id="bestTime">Best: –</div>
+  </div>
 
   <script>
     let stage = 0; // 0 = idle, 1 = breaths, 2 = hold, 3 = result
     let baseBreaths = 25;
     let currentBreaths = baseBreaths;
-    let timer = null;
+    let holdTimer = null;
     let timeElapsed = 0;
     let totalSeconds = 0;
+    let bestTime = 0;
     let totalTimer = null;
+    let totalRunning = false;
 
     const stageEl = document.getElementById("stage");
     const displayEl = document.getElementById("display");
     const buttonEl = document.getElementById("mainButton");
     const totalTimeEl = document.getElementById("totalTime");
+    const bestTimeEl = document.getElementById("bestTime");
 
     function formatTime(sec) {
       const h = String(Math.floor(sec / 3600)).padStart(2,"0");
@@ -89,24 +102,37 @@
         buttonEl.textContent = "Next Round";
       }
       totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
+      bestTimeEl.textContent = bestTime > 0 ? "Best: " + bestTime + "s" : "Best: –";
     }
 
     function startHold() {
       timeElapsed = 0;
-      timer = setInterval(() => {
+      holdTimer = setInterval(() => {
         timeElapsed++;
-        totalSeconds++;
         displayEl.textContent = timeElapsed + "s";
-        totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
       }, 1000);
     }
 
     function stopHold() {
-      clearInterval(timer);
+      clearInterval(holdTimer);
+      if (timeElapsed > bestTime) {
+        bestTime = timeElapsed;
+      }
+    }
+
+    function startTotalTimer() {
+      if (!totalRunning) {
+        totalRunning = true;
+        totalTimer = setInterval(() => {
+          totalSeconds++;
+          totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
+        }, 1000);
+      }
     }
 
     buttonEl.addEventListener("click", () => {
       if (stage === 0) {
+        startTotalTimer();
         stage = 1;
       } else if (stage === 1) {
         stage = 2;
