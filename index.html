@@ -22,7 +22,7 @@
       margin: 20px 0;
     }
     #info {
-      margin-top: 40px;
+      margin-top: 30px;
       font-size: 1.3em;
     }
     #totalTime {
@@ -31,20 +31,37 @@
     }
     #bestTime {
       color: #0ff;
+      margin-bottom: 10px;
     }
     #mainButton {
       width: 80%;
-      max-width: 300px;
-      height: 120px;
-      font-size: 1.5em;
+      aspect-ratio: 1 / 2; /* platums : augstums = 1:2 */
+      font-size: 2em;
       border: none;
       border-radius: 20px;
       background: #28a745;
       color: white;
-      margin-top: 30px;
+      margin-top: 20px;
     }
     #mainButton:active {
       background: #218838;
+    }
+    #saveBest {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 10px;
+      background: #007bff;
+      color: white;
+    }
+    #saveBest:active {
+      background: #0056b3;
+    }
+    #bestOfBest {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #ff0;
     }
   </style>
 </head>
@@ -52,11 +69,14 @@
   <h1>Breathing App</h1>
   <div id="stage">Ready</div>
   <div id="display">–</div>
+
   <button id="mainButton">Start</button>
+  <button id="saveBest">Save</button>
 
   <div id="info">
     <div id="totalTime">Total: 00:00:00</div>
     <div id="bestTime">Best: –</div>
+    <div id="bestOfBest">Best of the Best:<br>–</div>
   </div>
 
   <script>
@@ -69,16 +89,22 @@
     let bestTime = 0;
     let totalTimer = null;
     let totalRunning = false;
+    let bestOfBest = [];
 
     const stageEl = document.getElementById("stage");
     const displayEl = document.getElementById("display");
     const buttonEl = document.getElementById("mainButton");
     const totalTimeEl = document.getElementById("totalTime");
     const bestTimeEl = document.getElementById("bestTime");
+    const saveBestBtn = document.getElementById("saveBest");
+    const bestOfBestEl = document.getElementById("bestOfBest");
 
     // ---- LOAD BEST TIME FROM localStorage ----
     if (localStorage.getItem("bestTime")) {
       bestTime = parseInt(localStorage.getItem("bestTime"), 10);
+    }
+    if (localStorage.getItem("bestOfBest")) {
+      bestOfBest = JSON.parse(localStorage.getItem("bestOfBest"));
     }
 
     function formatTime(sec) {
@@ -86,6 +112,14 @@
       const m = String(Math.floor((sec % 3600) / 60)).padStart(2,"0");
       const s = String(sec % 60).padStart(2,"0");
       return `${h}:${m}:${s}`;
+    }
+
+    function renderBestOfBest() {
+      if (bestOfBest.length === 0) {
+        bestOfBestEl.innerHTML = "Best of the Best:<br>–";
+      } else {
+        bestOfBestEl.innerHTML = "Best of the Best:<br>" + bestOfBest.join("s<br>") + "s";
+      }
     }
 
     function updateUI() {
@@ -108,6 +142,7 @@
       }
       totalTimeEl.textContent = "Total: " + formatTime(totalSeconds);
       bestTimeEl.textContent = bestTime > 0 ? "Best: " + bestTime + "s" : "Best: –";
+      renderBestOfBest();
     }
 
     function startHold() {
@@ -153,10 +188,24 @@
       updateUI();
     });
 
+    // Save best to "Best of the Best"
+    saveBestBtn.addEventListener("click", () => {
+      if (timeElapsed > 0) {
+        bestOfBest.push(timeElapsed);
+        bestOfBest.sort((a,b) => b - a); // lielākie augšā
+        localStorage.setItem("bestOfBest", JSON.stringify(bestOfBest));
+        renderBestOfBest();
+      }
+    });
+
     // Touch-friendly
     buttonEl.addEventListener("touchstart", (e) => {
       e.preventDefault();
       buttonEl.click();
+    });
+    saveBestBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      saveBestBtn.click();
     });
 
     updateUI();
