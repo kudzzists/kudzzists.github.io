@@ -76,6 +76,11 @@
     const totalTimeEl = document.getElementById("totalTime");
     const bestTimeEl = document.getElementById("bestTime");
 
+    // ---- LOAD BEST TIME FROM localStorage ----
+    if (localStorage.getItem("bestTime")) {
+      bestTime = parseInt(localStorage.getItem("bestTime"), 10);
+    }
+
     function formatTime(sec) {
       const h = String(Math.floor(sec / 3600)).padStart(2,"0");
       const m = String(Math.floor((sec % 3600) / 60)).padStart(2,"0");
@@ -117,6 +122,7 @@
       clearInterval(holdTimer);
       if (timeElapsed > bestTime) {
         bestTime = timeElapsed;
+        localStorage.setItem("bestTime", bestTime); // save best
       }
     }
 
