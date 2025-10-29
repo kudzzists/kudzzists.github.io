@@ -6,6 +6,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding-top: 64px; /* pielāgo, ja nepieciešams */
 }
 .circle-timer {
   width: 220px;
@@ -78,4 +79,55 @@ body {
   0%   { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
   50%  { box-shadow: 0 0 15px 5px #fff; }
   100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+}
+
+.top-nav {
+  position: fixed;
+  top: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center; /* centrē horizontāli */
+  gap: 12px;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  background: #7bb7c9;
+  color: #072233;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.nav-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+}
+
+.nav-link.active {
+  background: #3a86ff;
+  color: #fff;
+}
+
+/* novieto lapas saturu zem fiksētās navigācijas */
+body {
+  /* ...existing body styles... */
+  padding-top: 64px; /* pielāgo, ja nepieciešams */
+}
+
+/* responsīvs: mazāk atstarpes mazos ekrānos */
+@media (max-width: 480px) {
+  .nav-link {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  body { padding-top: 56px; }
 }
