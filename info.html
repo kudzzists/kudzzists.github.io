@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Info — Laika skaitītājs</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* Konteiners visam saturam */
+      .info {
+        max-width: 1200px;
+        margin: 16px auto;
+        padding: 16px;
+        color: #fff;
+        text-align: center;
+      }
+
+      /* Info teksts pašā augšā */
+      .info-header {
+        margin: 8px 0 18px;
+        font-size: 1.25rem;
+        color: #e6f7fb;
+      }
+
+      .back {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 8px 14px;
+        background: #2ec4f1;
+        color: #072233;
+        border-radius: 8px;
+        text-decoration: none;
+      }
+
+      /* Lielāks, responsīvs video konteiners (16:9) */
+      .video-wrapper {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 */
+        height: 0;
+        overflow: hidden;
+        width: min(1400px, 96vw); /* palielināts */
+        margin: 18px auto 0;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+      }
+      .video-wrapper iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      /* Poga augšā atpakaļ uz Main */
+      .top-back {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1200;
+        background: #2ec4f1;
+        color: #072233;
+        padding: 8px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      }
+      .top-back:hover {
+        transform: translateX(-50%) translateY(-2px);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16);
+      }
+
+      /* Mazāki ekrāni */
+      @media (max-width: 700px) {
+        .info-header {
+          font-size: 1rem;
+          margin-top: 6px;
+        }
+        .video-wrapper {
+          width: 96vw;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Poga augšā -->
+    <a class="top-back" href="index.html">Atpakaļ uz Main</a>
+
+    <div class="info">
+      <!-- Info teksts augšā -->
+      <h1>Info</h1>
+      <div class="info-header">
+        Šeit ir īsa informācija par laika skaitītāju — instrukcijas un video.
+      </div>
+
+      <!-- Poga, kas atver video jaunā cilnē -->
+      <a
+        class="back"
+        href="https://www.youtube.com/watch?v=tybOi4hjZFQ"
+        target="_blank"
+        rel="noopener"
+        >Atvērt YouTube</a
+      >
+
+      <!-- Iebūvētais (embed) YouTube video -->
+      <div class="video-wrapper" aria-hidden="false">
+        <iframe
+          src="https://www.youtube.com/embed/tybOi4hjZFQ"
+          title="YouTube video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </body>
+</html>
